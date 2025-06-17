@@ -14,7 +14,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   notificationsEnabled: true,
   soundEnabled: true,
   timeFormat: '12h',
-  apiUrl: 'https://mediminder.tiiny.site/medicines.json',
+  apiUrl: 'https://mock.apidog.com/m2/962827-947413-default/18105535',
   defaultTimes: {
     once: ['08:00'],
     twice: ['08:00', '20:00'],
