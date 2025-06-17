@@ -107,6 +107,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const storedMedications = await AsyncStorage.getItem(STORAGE_KEYS.MEDICATIONS);
         if (storedMedications) {
           setMedications(JSON.parse(storedMedications));
+        }else{
+          const default_medicines = `[{"name":"Paracetamol 500mg","frequency":"Four times daily","quantity":1,"notes":"After meal"},{"name":"Amoxicillin 250mg","frequency":"Three times daily","quantity":2,"notes":"Before meal, full glass of water"},{"name":"Metformin 850mg","frequency":"Twice daily","quantity":1,"notes":"With meal"},{"name":"Vitamin D3 1000IU","frequency":"Once daily","quantity":1,"notes":"After breakfast"},{"name":"Ibuprofen 200mg","frequency":"As needed","quantity":2,"notes":"After meal, not on empty stomach"}]
+`;
+          setMedications(JSON.parse(default_medicines));
         }
 
         // Load medication logs
