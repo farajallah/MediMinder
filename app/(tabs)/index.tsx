@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
   },
   badge: {
     width: 100,
-    // height: 32,
+    height: 40,
   },
   scrollView: {
     flex: 1,
