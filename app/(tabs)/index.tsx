@@ -265,8 +265,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   badge: {
-    width: 80,
-    height: 32,
+    width: 100,
+    // height: 32,
   },
   scrollView: {
     flex: 1,
