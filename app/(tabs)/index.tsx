@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, RefreshControl, Image, Linking } from 'react-native';
 import { useApp } from '@/contexts/AppContext';
 import { format } from 'date-fns';
 import { Link } from 'expo-router';
@@ -85,14 +85,34 @@ export default function HomeScreen() {
         return <Clock size={20} color="#4A90E2" />;
     }
   };
+
+  // Handle badge press
+  const handleBadgePress = () => {
+    Linking.openURL('https://bolt.new/');
+  };
   
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <Text style={styles.title}>{t('todayMeds')}</Text>
-        <Text style={styles.date}>
-          {format(currentDate, 'EEEE, MMMM d, yyyy')}
-        </Text>
+        <View style={styles.headerContent}>
+          <View style={styles.headerText}>
+            <Text style={styles.title}>{t('todayMeds')}</Text>
+            <Text style={styles.date}>
+              {format(currentDate, 'EEEE, MMMM d, yyyy')}
+            </Text>
+          </View>
+          <TouchableOpacity 
+            style={styles.badgeContainer} 
+            onPress={handleBadgePress}
+            activeOpacity={0.8}
+          >
+            <Image 
+              source={require('@/assets/images/bolt.new-badge.png')} 
+              style={styles.badge}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+        </View>
       </View>
       
       <ScrollView
@@ -218,6 +238,14 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#4A90E2',
   },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  headerText: {
+    flex: 1,
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -227,6 +255,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: 'rgba(255, 255, 255, 0.8)',
     marginTop: 4,
+  },
+  badgeContainer: {
+    marginLeft: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  badge: {
+    width: 80,
+    height: 32,
   },
   scrollView: {
     flex: 1,
