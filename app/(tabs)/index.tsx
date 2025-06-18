@@ -163,7 +163,7 @@ export default function HomeScreen() {
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>{t('taken')}</Text>
                 {groupedMedications.taken.map((med) => (
-                  <TouchableOpacity key={med.id} style={[styles.medicationCard, styles.takenCard]}>
+                  <TouchableOpacity key={med.id} style={StyleSheet.flatten([styles.medicationCard, styles.takenCard])}>
                     <View style={styles.timeContainer}>
                       <Text style={styles.timeText}>
                         {dateTimeUtils.formatTimeForDisplay(med.time, settings.timeFormat)}
@@ -185,7 +185,7 @@ export default function HomeScreen() {
                 <Text style={styles.sectionTitle}>{t('missed')}</Text>
                 {groupedMedications.missed.map((med) => (
                   <Link href={`/take/${med.medicationId}?time=${med.time}`} key={med.id} asChild>
-                    <TouchableOpacity style={[styles.medicationCard, styles.missedCard]}>
+                    <TouchableOpacity style={StyleSheet.flatten([styles.medicationCard, styles.missedCard])}>
                       <View style={styles.timeContainer}>
                         <Text style={styles.timeText}>
                           {dateTimeUtils.formatTimeForDisplay(med.time, settings.timeFormat)}
@@ -207,7 +207,7 @@ export default function HomeScreen() {
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>{t('skipped')}</Text>
                 {groupedMedications.skipped.map((med) => (
-                  <TouchableOpacity key={med.id} style={[styles.medicationCard, styles.skippedCard]}>
+                  <TouchableOpacity key={med.id} style={StyleSheet.flatten([styles.medicationCard, styles.skippedCard])}>
                     <View style={styles.timeContainer}>
                       <Text style={styles.timeText}>
                         {dateTimeUtils.formatTimeForDisplay(med.time, settings.timeFormat)}

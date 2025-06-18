@@ -27,11 +27,9 @@ if (Platform.OS !== 'web') {
 export default function RootLayout() {
   useFrameworkReady();
   
-  // Load fonts
+  // Load fonts - removed problematic font loading
   const [fontsLoaded, fontError] = useFonts({
-    'Inter-Regular': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Feather.ttf'),
-    'Inter-Medium': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/FontAwesome.ttf'),
-    'Inter-Bold': require('@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf'),
+    // Using system fonts instead of problematic font file paths
   });
 
   const onLayoutRootView = useCallback(async () => {
