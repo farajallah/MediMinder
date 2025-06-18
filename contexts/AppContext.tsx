@@ -104,14 +104,62 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
 
         // Load medications
-          const default_medicines = `[{"name":"Paracetamol 500mg","frequency":"Four times daily","quantity":1,"notes":"After meal"},{"name":"Amoxicillin 250mg","frequency":"Three times daily","quantity":2,"notes":"Before meal, full glass of water"},{"name":"Metformin 850mg","frequency":"Twice daily","quantity":1,"notes":"With meal"},{"name":"Vitamin D3 1000IU","frequency":"Once daily","quantity":1,"notes":"After breakfast"},{"name":"Ibuprofen 200mg","frequency":"As needed","quantity":2,"notes":"After meal, not on empty stomach"}]`;
-          setMedications(JSON.parse(default_medicines));
-
         const storedMedications = await AsyncStorage.getItem(STORAGE_KEYS.MEDICATIONS);
         if (storedMedications) {
           setMedications(JSON.parse(storedMedications));
-        }else{
-          const default_medicines = `[{"name":"Paracetamol 500mg","frequency":"Four times daily","quantity":1,"notes":"After meal"},{"name":"Amoxicillin 250mg","frequency":"Three times daily","quantity":2,"notes":"Before meal, full glass of water"},{"name":"Metformin 850mg","frequency":"Twice daily","quantity":1,"notes":"With meal"},{"name":"Vitamin D3 1000IU","frequency":"Once daily","quantity":1,"notes":"After breakfast"},{"name":"Ibuprofen 200mg","frequency":"As needed","quantity":2,"notes":"After meal, not on empty stomach"}]`;
+        } else {
+          const default_medicines = `[
+            {
+              "id": "med_default_1",
+              "name": "Paracetamol 500mg",
+              "dosage": "500mg",
+              "frequency": "four",
+              "times": ["08:00", "12:00", "16:00", "20:00"],
+              "notes": "After meal",
+              "createdAt": ${Date.now()},
+              "updatedAt": ${Date.now()}
+            },
+            {
+              "id": "med_default_2",
+              "name": "Amoxicillin 250mg",
+              "dosage": "250mg",
+              "frequency": "thrice",
+              "times": ["08:00", "14:00", "20:00"],
+              "notes": "Before meal, full glass of water",
+              "createdAt": ${Date.now()},
+              "updatedAt": ${Date.now()}
+            },
+            {
+              "id": "med_default_3",
+              "name": "Metformin 850mg",
+              "dosage": "850mg",
+              "frequency": "twice",
+              "times": ["08:00", "20:00"],
+              "notes": "With meal",
+              "createdAt": ${Date.now()},
+              "updatedAt": ${Date.now()}
+            },
+            {
+              "id": "med_default_4",
+              "name": "Vitamin D3 1000IU",
+              "dosage": "1000IU",
+              "frequency": "once",
+              "times": ["08:00"],
+              "notes": "After breakfast",
+              "createdAt": ${Date.now()},
+              "updatedAt": ${Date.now()}
+            },
+            {
+              "id": "med_default_5",
+              "name": "Ibuprofen 200mg",
+              "dosage": "200mg",
+              "frequency": "asNeeded",
+              "times": [],
+              "notes": "After meal, not on empty stomach",
+              "createdAt": ${Date.now()},
+              "updatedAt": ${Date.now()}
+            }
+          ]`;
           setMedications(JSON.parse(default_medicines));
         }
 
