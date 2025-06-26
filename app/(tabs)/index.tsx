@@ -142,8 +142,16 @@ export default function HomeScreen() {
 
   // Handle medication card press with timing validation
   const handleMedicationPress = (medicationId: string, time: string, status: string) => {
-    if (true) {
-    // if (status === 'upcoming') {
+      const timeUntil = dateTimeUtils.getTimeUntilDose(time);
+      Alert.alert(
+        t('notDueYet') || 'Not Due Yet',
+        t('waitForDose') || `This medication is not due yet. Please wait ${timeUntil.hours} hours and ${timeUntil.minutes} minutes.`,
+        [{ text: 'OK' }]
+      );
+      return;
+
+    
+    if (status === 'upcoming') {
       const timeUntil = dateTimeUtils.getTimeUntilDose(time);
       Alert.alert(
         t('notDueYet') || 'Not Due Yet',
