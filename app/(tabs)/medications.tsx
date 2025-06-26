@@ -1,12 +1,14 @@
 import React from 'react';
-import { StyleSheet, View, Text, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Image, Linking } from 'react-native';
 import { useApp } from '@/contexts/AppContext';
 import { format } from 'date-fns';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CircleCheck, CircleX, CircleAlert as AlertCircle } from 'lucide-react-native';
 import { formatTimeForDisplay } from '@/utils/dateTime';
 
 export default function MedicationsHistoryScreen() {
   const { medicationLogs, medications, settings, t } = useApp();
+  const insets = useSafeAreaInsets();
 
   // Group logs by date
   const groupedLogs = medicationLogs.reduce((acc, log) => {
@@ -40,52 +42,93 @@ export default function MedicationsHistoryScreen() {
     return medication ? medication.name : 'Unknown Medication';
   };
 
+  const getMedicationDosage = (id: string) => {
+    const medication = medications.find(med => med.id === id);
+    return medication ? medication.dosage : '';
+  };
+
+  // Handle badge press
+  const handleBadgePress = () => {
+    Linking.openURL('https://bolt.new/');
+  };
+
   return (
-    <ScrollView style={styles.container}>
-      {sortedDates.map(date => (
-        <View key={date} style={styles.dateSection}>
-          <Text style={styles.dateHeader}>
-            {format(new Date(date), 'EEEE, MMMM d, yyyy')}
-          </Text>
-          
-          {groupedLogs[date]
-            .sort((a, b) => a.scheduledTime.localeCompare(b.scheduledTime))
-            .map(log => (
-              <View key={log.id} style={styles.logItem}>
-                <View style={styles.timeContainer}>
-                  <Text style={styles.timeText}>
-                    {formatTimeForDisplay(log.scheduledTime, settings.timeFormat)}
-                  </Text>
-                  {log.actualTime && (
-                    <Text style={styles.actualTimeText}>
-                      {formatTimeForDisplay(log.actualTime, settings.timeFormat)}
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={styles.header}>
+        <View style={styles.headerContent}>
+          <View style={styles.headerText}>
+            <Text style={styles.title}>{t('medicineHistory')}</Text>
+          </View>
+          <TouchableOpacity 
+            style={styles.badgeContainer} 
+            onPress={handleBadgePress}
+            activeOpacity={0.8}
+          >
+            <Image 
+              source={require('@/assets/images/bolt.new-badge.png')} 
+              style={styles.badge}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <ScrollView style={styles.scrollView}>
+        {sortedDates.map(date => (
+          <View key={date} style={styles.dateSection}>
+            <View style={styles.dateHeader}>
+              <Text style={styles.dateHeaderText}>
+                {format(new Date(date), 'EEEE, MMMM d, yyyy')}
+              </Text>
+            </View>
+            
+            {groupedLogs[date]
+              .sort((a, b) => a.scheduledTime.localeCompare(b.scheduledTime))
+              .map(log => (
+                <View key={log.id} style={[
+                  styles.logItem,
+                  log.status === 'taken' && styles.takenItem,
+                  log.status === 'skipped' && styles.skippedItem,
+                  log.status === 'missed' && styles.missedItem
+                ]}>
+                  <View style={styles.timeContainer}>
+                    <Text style={styles.timeText}>
+                      {formatTimeForDisplay(log.scheduledTime, settings.timeFormat)}
                     </Text>
-                  )}
+                    {log.actualTime && (
+                      <Text style={styles.actualTimeText}>
+                        {formatTimeForDisplay(log.actualTime, settings.timeFormat)}
+                      </Text>
+                    )}
+                  </View>
+                  
+                  <View style={styles.medicationInfo}>
+                    <Text style={styles.medicationName}>
+                      {getMedicationName(log.medicationId)}
+                    </Text>
+                    <Text style={styles.medicationDosage}>
+                      {getMedicationDosage(log.medicationId)}
+                    </Text>
+                    {log.skipReason && (
+                      <Text style={styles.skipReason}>{log.skipReason}</Text>
+                    )}
+                  </View>
+                  
+                  <View style={styles.statusContainer}>
+                    {getStatusIcon(log.status)}
+                  </View>
                 </View>
-                
-                <View style={styles.medicationInfo}>
-                  <Text style={styles.medicationName}>
-                    {getMedicationName(log.medicationId)}
-                  </Text>
-                  {log.skipReason && (
-                    <Text style={styles.skipReason}>{log.skipReason}</Text>
-                  )}
-                </View>
-                
-                <View style={styles.statusContainer}>
-                  {getStatusIcon(log.status)}
-                </View>
-              </View>
-            ))}
-        </View>
-      ))}
-      
-      {sortedDates.length === 0 && (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyStateText}>{t('noMedicationHistory')}</Text>
-        </View>
-      )}
-    </ScrollView>
+              ))}
+          </View>
+        ))}
+        
+        {sortedDates.length === 0 && (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>{t('noMedicationHistory')}</Text>
+          </View>
+        )}
+      </ScrollView>
+    </View>
   );
 }
 
@@ -94,17 +137,51 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F7F8FA',
   },
+  header: {
+    padding: 16,
+    backgroundColor: '#4A90E2',
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  headerText: {
+    flex: 1,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  badgeContainer: {
+    marginLeft: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  badge: {
+    width: 100,
+    height: 60,
+  },
+  scrollView: {
+    flex: 1,
+  },
   dateSection: {
     marginBottom: 24,
   },
   dateHeader: {
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEEEEE',
+  },
+  dateHeaderText: {
     fontSize: 18,
     fontWeight: '600',
     color: '#333333',
-    padding: 16,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#EEEEEE',
   },
   logItem: {
     flexDirection: 'row',
@@ -113,6 +190,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
+  },
+  takenItem: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#5DC2AF',
+  },
+  skippedItem: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#FF6B6B',
+  },
+  missedItem: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#FFB156',
   },
   timeContainer: {
     width: 80,
@@ -135,6 +224,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: '#333333',
+  },
+  medicationDosage: {
+    fontSize: 14,
+    color: '#666666',
+    marginTop: 2,
   },
   skipReason: {
     fontSize: 14,

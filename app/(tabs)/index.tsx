@@ -22,48 +22,56 @@ export default function HomeScreen() {
     return () => clearInterval(timer);
   }, []);
   
-  // Get all medication doses for today
-  const todayMedications = medications.flatMap(medication => {
+  // Get next dose for each medication
+  const getNextDoseForMedication = (medication: any) => {
     // Skip "as needed" medications for the schedule
     if (medication.frequency === 'asNeeded') {
-      return [];
+      return null;
     }
     
-    return medication.times.map(time => ({
-      id: `${medication.id}_${time}`,
-      medicationId: medication.id,
-      name: medication.name,
-      dosage: medication.dosage,
-      time,
-      notes: medication.notes,
-    }));
-  }).sort((a, b) => dateTimeUtils.compareTimeStrings(a.time, b.time));
-  
-  // Find logs for today's medications
-  const getMedicationLogStatus = (medicationId: string, time: string) => {
-    const log = medicationLogs.find(
-      log => log.medicationId === medicationId && 
-             log.scheduledTime === time && 
-             log.scheduledDate === today
-    );
+    const currentTime = dateTimeUtils.getCurrentTime();
     
-    if (log) {
-      return log.status;
+    // Find the next dose that hasn't been taken or skipped
+    for (const time of medication.times.sort((a: string, b: string) => dateTimeUtils.compareTimeStrings(a, b))) {
+      const log = medicationLogs.find(
+        log => log.medicationId === medication.id && 
+               log.scheduledTime === time && 
+               log.scheduledDate === today
+      );
+      
+      // If no log exists or if it's a future time, this could be the next dose
+      if (!log) {
+        const status = dateTimeUtils.getMedicationStatus(time);
+        return {
+          id: `${medication.id}_${time}`,
+          medicationId: medication.id,
+          name: medication.name,
+          dosage: medication.dosage,
+          time,
+          notes: medication.notes,
+          status
+        };
+      }
     }
     
-    // If no log exists, determine status based on time
-    return dateTimeUtils.getMedicationStatus(time);
+    return null;
   };
   
-  // Group medications by status
-  const groupedMedications = todayMedications.reduce((acc, med) => {
-    const status = getMedicationLogStatus(med.medicationId, med.time);
+  // Get next doses for all medications
+  const nextDoses = medications
+    .map(getNextDoseForMedication)
+    .filter(dose => dose !== null)
+    .sort((a, b) => dateTimeUtils.compareTimeStrings(a.time, b.time));
+  
+  // Group doses by status
+  const groupedDoses = nextDoses.reduce((acc, dose) => {
+    const status = dose.status;
     if (!acc[status]) {
       acc[status] = [];
     }
-    acc[status].push({...med, status});
+    acc[status].push(dose);
     return acc;
-  }, {} as Record<string, typeof todayMedications>);
+  }, {} as Record<string, typeof nextDoses>);
   
   // Handle refresh
   const onRefresh = () => {
@@ -122,7 +130,7 @@ export default function HomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {todayMedications.length === 0 ? (
+        {nextDoses.length === 0 ? (
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateText}>{t('noMedsToday')}</Text>
             <Link href="/medications" asChild>
@@ -134,23 +142,23 @@ export default function HomeScreen() {
         ) : (
           <>
             {/* Current and upcoming medications */}
-            {(groupedMedications.upcoming || groupedMedications.current) && (
+            {(groupedDoses.upcoming || groupedDoses.current) && (
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>{t('upcomingDoses')}</Text>
-                {[...(groupedMedications.current || []), ...(groupedMedications.upcoming || [])]
+                {[...(groupedDoses.current || []), ...(groupedDoses.upcoming || [])]
                   .sort((a, b) => dateTimeUtils.compareTimeStrings(a.time, b.time))
-                  .map((med) => (
-                    <Link href={`/take/${med.medicationId}?time=${med.time}`} key={med.id} asChild>
+                  .map((dose) => (
+                    <Link href={`/take/${dose.medicationId}?time=${dose.time}`} key={dose.id} asChild>
                       <TouchableOpacity style={styles.medicationCard}>
                         <View style={styles.timeContainer}>
                           <Text style={styles.timeText}>
-                            {dateTimeUtils.formatTimeForDisplay(med.time, settings.timeFormat)}
+                            {dateTimeUtils.formatTimeForDisplay(dose.time, settings.timeFormat)}
                           </Text>
-                          {getStatusIcon(med.status)}
+                          {getStatusIcon(dose.status)}
                         </View>
                         <View style={styles.medicationInfo}>
-                          <Text style={styles.medicationName}>{med.name}</Text>
-                          <Text style={styles.medicationDosage}>{med.dosage}</Text>
+                          <Text style={styles.medicationName}>{dose.name}</Text>
+                          <Text style={styles.medicationDosage}>{dose.dosage}</Text>
                         </View>
                       </TouchableOpacity>
                     </Link>
@@ -158,67 +166,25 @@ export default function HomeScreen() {
               </View>
             )}
             
-            {/* Taken medications */}
-            {groupedMedications.taken && (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{t('taken')}</Text>
-                {groupedMedications.taken.map((med) => (
-                  <TouchableOpacity key={med.id} style={StyleSheet.flatten([styles.medicationCard, styles.takenCard])}>
-                    <View style={styles.timeContainer}>
-                      <Text style={styles.timeText}>
-                        {dateTimeUtils.formatTimeForDisplay(med.time, settings.timeFormat)}
-                      </Text>
-                      {getStatusIcon('taken')}
-                    </View>
-                    <View style={styles.medicationInfo}>
-                      <Text style={styles.medicationName}>{med.name}</Text>
-                      <Text style={styles.medicationDosage}>{med.dosage}</Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
-            
             {/* Missed medications */}
-            {groupedMedications.missed && (
+            {groupedDoses.missed && (
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>{t('missed')}</Text>
-                {groupedMedications.missed.map((med) => (
-                  <Link href={`/take/${med.medicationId}?time=${med.time}`} key={med.id} asChild>
-                    <TouchableOpacity style={StyleSheet.flatten([styles.medicationCard, styles.missedCard])}>
+                {groupedDoses.missed.map((dose) => (
+                  <Link href={`/take/${dose.medicationId}?time=${dose.time}`} key={dose.id} asChild>
+                    <TouchableOpacity style={[styles.medicationCard, styles.missedCard]}>
                       <View style={styles.timeContainer}>
                         <Text style={styles.timeText}>
-                          {dateTimeUtils.formatTimeForDisplay(med.time, settings.timeFormat)}
+                          {dateTimeUtils.formatTimeForDisplay(dose.time, settings.timeFormat)}
                         </Text>
                         {getStatusIcon('missed')}
                       </View>
                       <View style={styles.medicationInfo}>
-                        <Text style={styles.medicationName}>{med.name}</Text>
-                        <Text style={styles.medicationDosage}>{med.dosage}</Text>
+                        <Text style={styles.medicationName}>{dose.name}</Text>
+                        <Text style={styles.medicationDosage}>{dose.dosage}</Text>
                       </View>
                     </TouchableOpacity>
                   </Link>
-                ))}
-              </View>
-            )}
-            
-            {/* Skipped medications */}
-            {groupedMedications.skipped && (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>{t('skipped')}</Text>
-                {groupedMedications.skipped.map((med) => (
-                  <TouchableOpacity key={med.id} style={StyleSheet.flatten([styles.medicationCard, styles.skippedCard])}>
-                    <View style={styles.timeContainer}>
-                      <Text style={styles.timeText}>
-                        {dateTimeUtils.formatTimeForDisplay(med.time, settings.timeFormat)}
-                      </Text>
-                      {getStatusIcon('skipped')}
-                    </View>
-                    <View style={styles.medicationInfo}>
-                      <Text style={styles.medicationName}>{med.name}</Text>
-                      <Text style={styles.medicationDosage}>{med.dosage}</Text>
-                    </View>
-                  </TouchableOpacity>
                 ))}
               </View>
             )}
@@ -296,17 +262,9 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 1,
   },
-  takenCard: {
-    borderLeftWidth: 4,
-    borderLeftColor: '#5DC2AF',
-  },
   missedCard: {
     borderLeftWidth: 4,
     borderLeftColor: '#FFB156',
-  },
-  skippedCard: {
-    borderLeftWidth: 4,
-    borderLeftColor: '#FF6B6B',
   },
   timeContainer: {
     width: 80,

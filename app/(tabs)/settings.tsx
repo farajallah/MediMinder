@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, ScrollView, Switch, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView, Switch, TouchableOpacity, Alert, Image, Linking } from 'react-native';
 import { Globe, Bell, Clock, Download } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import { Picker } from '@react-native-picker/picker';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import dateTimeUtils from '@/utils/dateTime';
 import { router } from 'expo-router';
 
@@ -15,6 +16,7 @@ const TIME_OPTIONS = [
 
 export default function Settings() {
   const { t, settings, updateSettings, loadMedicinesFromApi } = useApp();
+  const insets = useSafeAreaInsets();
   const [isLoading, setIsLoading] = useState(false);
   
   const handleTimeChange = (frequency: string, index: number, newTime: string) => {
@@ -64,131 +66,157 @@ export default function Settings() {
       setIsLoading(false);
     }
   };
+
+  // Handle badge press
+  const handleBadgePress = () => {
+    Linking.openURL('https://bolt.new/');
+  };
   
   return (
-    <ScrollView style={styles.container}>
-      {/* API Settings */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Globe size={20} color="#4A90E2" />
-          <Text style={styles.sectionTitle}>{t('apiSettings')}</Text>
-        </View>
-        
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>{t('apiUrl')}</Text>
-          <TextInput
-            style={styles.input}
-            value={settings.apiUrl || ''}
-            onChangeText={(value) => updateSettings({ apiUrl: value })}
-            placeholder="https://example.com/api"
-            placeholderTextColor="#AAAAAA"
-          />
-        </View>
-
-        <TouchableOpacity 
-          style={[styles.loadButton, isLoading && styles.loadButtonDisabled]}
-          onPress={handleLoadMedicines}
-          disabled={isLoading}>
-          <Download size={20} color="#FFFFFF" />
-          <Text style={styles.loadButtonText}>
-            {isLoading ? t('loadingMedicines') : t('loadMedicines')}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Notification Settings */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Bell size={20} color="#4A90E2" />
-          <Text style={styles.sectionTitle}>{t('notifications')}</Text>
-        </View>
-        
-        <View style={styles.switchGroup}>
-          <Text style={styles.switchLabel}>{t('notificationsEnabled')}</Text>
-          <Switch
-            value={settings.notificationsEnabled}
-            onValueChange={(value) => updateSettings({ notificationsEnabled: value })}
-            trackColor={{ false: '#D1D1D1', true: '#4A90E2' }}
-          />
-        </View>
-
-        <View style={styles.switchGroup}>
-          <Text style={styles.switchLabel}>{t('soundEnabled')}</Text>
-          <Switch
-            value={settings.soundEnabled}
-            onValueChange={(value) => updateSettings({ soundEnabled: value })}
-            trackColor={{ false: '#D1D1D1', true: '#4A90E2' }}
-          />
-        </View>
-      </View>
-
-      {/* Language Settings */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Globe size={20} color="#4A90E2" />
-          <Text style={styles.sectionTitle}>{t('language')}</Text>
-        </View>
-        
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={settings.language}
-            onValueChange={(value) => updateSettings({ language: value })}
-            style={styles.picker}
-          >
-            <Picker.Item label={t('english')} value="en" />
-            <Picker.Item label={t('arabic')} value="ar" />
-            <Picker.Item label={t('turkish')} value="tr" />
-          </Picker>
-        </View>
-      </View>
-
-      {/* Time Preferences */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Clock size={20} color="#4A90E2" />
-          <Text style={styles.sectionTitle}>{t('timePreferences')}</Text>
-        </View>
-
-        <View style={styles.switchGroup}>
-          <Text style={styles.switchLabel}>{t('timeFormat')}</Text>
-          <Switch
-            value={settings.timeFormat === '24h'}
-            onValueChange={(value) => updateSettings({ timeFormat: value ? '24h' : '12h' })}
-            trackColor={{ false: '#D1D1D1', true: '#4A90E2' }}
-          />
-          <Text style={styles.switchValue}>
-            {settings.timeFormat === '24h' ? t('format24h') : t('format12h')}
-          </Text>
-        </View>
-
-        <Text style={styles.subSectionTitle}>{t('defaultTimes')}</Text>
-        
-        {Object.entries(settings.defaultTimes).map(([frequency, times]) => (
-          <View key={frequency} style={styles.timeGroup}>
-            <Text style={styles.timeLabel}>{t(frequency)}</Text>
-            <View style={styles.timePickerContainer}>
-              {times.map((time, index) => (
-                <View key={index} style={styles.timePickerWrapper}>
-                  <Picker
-                    selectedValue={time}
-                    onValueChange={(value) => handleTimeChange(frequency, index, value)}
-                    style={styles.timePicker}
-                  >
-                    {TIME_OPTIONS.map((option) => (
-                      <Picker.Item
-                        key={option}
-                        label={dateTimeUtils.formatTimeForDisplay(option, settings.timeFormat)}
-                        value={option}
-                      />
-                    ))}
-                  </Picker>
-                </View>
-              ))}
-            </View>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <View style={styles.header}>
+        <View style={styles.headerContent}>
+          <View style={styles.headerText}>
+            <Text style={styles.title}>{t('settings')}</Text>
           </View>
-        ))}
+          <TouchableOpacity 
+            style={styles.badgeContainer} 
+            onPress={handleBadgePress}
+            activeOpacity={0.8}
+          >
+            <Image 
+              source={require('@/assets/images/bolt.new-badge.png')} 
+              style={styles.badge}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+        </View>
       </View>
-    </ScrollView>
+
+      <ScrollView style={styles.scrollView}>
+        {/* API Settings */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Globe size={20} color="#4A90E2" />
+            <Text style={styles.sectionTitle}>{t('apiSettings')}</Text>
+          </View>
+          
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>{t('apiUrl')}</Text>
+            <TextInput
+              style={styles.input}
+              value={settings.apiUrl || ''}
+              onChangeText={(value) => updateSettings({ apiUrl: value })}
+              placeholder="https://example.com/api"
+              placeholderTextColor="#AAAAAA"
+            />
+          </View>
+
+          <TouchableOpacity 
+            style={[styles.loadButton, isLoading && styles.loadButtonDisabled]}
+            onPress={handleLoadMedicines}
+            disabled={isLoading}>
+            <Download size={20} color="#FFFFFF" />
+            <Text style={styles.loadButtonText}>
+              {isLoading ? t('loadingMedicines') : t('loadMedicines')}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Notification Settings */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Bell size={20} color="#4A90E2" />
+            <Text style={styles.sectionTitle}>{t('notifications')}</Text>
+          </View>
+          
+          <View style={styles.switchGroup}>
+            <Text style={styles.switchLabel}>{t('notificationsEnabled')}</Text>
+            <Switch
+              value={settings.notificationsEnabled}
+              onValueChange={(value) => updateSettings({ notificationsEnabled: value })}
+              trackColor={{ false: '#D1D1D1', true: '#4A90E2' }}
+            />
+          </View>
+
+          <View style={styles.switchGroup}>
+            <Text style={styles.switchLabel}>{t('soundEnabled')}</Text>
+            <Switch
+              value={settings.soundEnabled}
+              onValueChange={(value) => updateSettings({ soundEnabled: value })}
+              trackColor={{ false: '#D1D1D1', true: '#4A90E2' }}
+            />
+          </View>
+        </View>
+
+        {/* Language Settings */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Globe size={20} color="#4A90E2" />
+            <Text style={styles.sectionTitle}>{t('language')}</Text>
+          </View>
+          
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={settings.language}
+              onValueChange={(value) => updateSettings({ language: value })}
+              style={styles.picker}
+            >
+              <Picker.Item label={t('english')} value="en" />
+              <Picker.Item label={t('arabic')} value="ar" />
+              <Picker.Item label={t('turkish')} value="tr" />
+            </Picker>
+          </View>
+        </View>
+
+        {/* Time Preferences */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Clock size={20} color="#4A90E2" />
+            <Text style={styles.sectionTitle}>{t('timePreferences')}</Text>
+          </View>
+
+          <View style={styles.switchGroup}>
+            <Text style={styles.switchLabel}>{t('timeFormat')}</Text>
+            <Switch
+              value={settings.timeFormat === '24h'}
+              onValueChange={(value) => updateSettings({ timeFormat: value ? '24h' : '12h' })}
+              trackColor={{ false: '#D1D1D1', true: '#4A90E2' }}
+            />
+            <Text style={styles.switchValue}>
+              {settings.timeFormat === '24h' ? t('format24h') : t('format12h')}
+            </Text>
+          </View>
+
+          <Text style={styles.subSectionTitle}>{t('defaultTimes')}</Text>
+          
+          {Object.entries(settings.defaultTimes).map(([frequency, times]) => (
+            <View key={frequency} style={styles.timeGroup}>
+              <Text style={styles.timeLabel}>{t(frequency)}</Text>
+              <View style={styles.timePickerContainer}>
+                {times.map((time, index) => (
+                  <View key={index} style={styles.timePickerWrapper}>
+                    <Picker
+                      selectedValue={time}
+                      onValueChange={(value) => handleTimeChange(frequency, index, value)}
+                      style={styles.timePicker}
+                    >
+                      {TIME_OPTIONS.map((option) => (
+                        <Picker.Item
+                          key={option}
+                          label={dateTimeUtils.formatTimeForDisplay(option, settings.timeFormat)}
+                          value={option}
+                        />
+                      ))}
+                    </Picker>
+                  </View>
+                ))}
+              </View>
+            </View>
+          ))}
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -196,6 +224,38 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F7F8FA',
+  },
+  header: {
+    padding: 16,
+    backgroundColor: '#4A90E2',
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  headerText: {
+    flex: 1,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  badgeContainer: {
+    marginLeft: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  badge: {
+    width: 100,
+    height: 60,
+  },
+  scrollView: {
+    flex: 1,
   },
   section: {
     padding: 16,
