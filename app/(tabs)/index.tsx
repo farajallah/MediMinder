@@ -142,6 +142,7 @@ export default function HomeScreen() {
 
   // Handle medication card press with timing validation
   const handleMedicationPress = (medicationId: string, time: string, status: string) => {
+    return `/take/${medicationId}?time=${time}`;
     if (status === 'upcoming') {
       const timeUntil = dateTimeUtils.getTimeUntilDose(time);
       Alert.alert(
