@@ -23,6 +23,8 @@ export default {
     skipped: 'Skipped',
     medicineHistory: 'Medicine History',
     noMedicationHistory: 'No medication history to display',
+    notDueYet: 'Not Due Yet',
+    waitForDose: 'This medication is not due yet. Please wait for the scheduled time.',
     
     // Medications screen
     medications: 'Medications',
@@ -38,6 +40,7 @@ export default {
     notesLabel: 'Notes',
     notesPlaceholder: 'Enter any additional notes',
     timesLabel: 'Times',
+    addTime: 'Add Time',
     
     // Frequency options
     once: 'Once Daily',
@@ -114,6 +117,8 @@ export default {
     skipped: 'تم تخطيه',
     medicineHistory: 'سجل الأدوية',
     noMedicationHistory: 'لا يوجد سجل أدوية لعرضه',
+    notDueYet: 'لم يحن الوقت بعد',
+    waitForDose: 'لم يحن وقت هذا الدواء بعد. يرجى الانتظار للوقت المحدد.',
     
     // Medications screen
     medications: 'الأدوية',
@@ -129,6 +134,7 @@ export default {
     notesLabel: 'ملاحظات',
     notesPlaceholder: 'أدخل أي ملاحظات إضافية',
     timesLabel: 'الأوقات',
+    addTime: 'إضافة وقت',
     
     // Frequency options
     once: 'مرة واحدة يومياً',
@@ -205,6 +211,8 @@ export default {
     skipped: 'Atlandı',
     medicineHistory: 'İlaç Geçmişi',
     noMedicationHistory: 'Görüntülenecek ilaç geçmişi yok',
+    notDueYet: 'Henüz Zamanı Değil',
+    waitForDose: 'Bu ilacın zamanı henüz gelmedi. Lütfen planlanan zamana kadar bekleyin.',
     
     // Medications screen
     medications: 'İlaçlar',
@@ -220,6 +228,7 @@ export default {
     notesLabel: 'Notlar',
     notesPlaceholder: 'Ek notlar girin',
     timesLabel: 'Zamanlar',
+    addTime: 'Zaman Ekle',
     
     // Frequency options
     once: 'Günde Bir Kez',

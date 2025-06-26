@@ -117,13 +117,35 @@ const getMedicationStatus = (scheduledTime: string): 'upcoming' | 'missed' | 'cu
   return 'current';
 };
 
+// Get time until a dose is due (for upcoming medications)
+const getTimeUntilDose = (scheduledTime: string): { hours: number; minutes: number } => {
+  const currentTime = getCurrentTime();
+  const [currentHour, currentMinute] = currentTime.split(':').map(Number);
+  const [scheduledHour, scheduledMinute] = scheduledTime.split(':').map(Number);
+  
+  let totalCurrentMinutes = currentHour * 60 + currentMinute;
+  let totalScheduledMinutes = scheduledHour * 60 + scheduledMinute;
+  
+  // If scheduled time is tomorrow (past midnight), add 24 hours
+  if (totalScheduledMinutes < totalCurrentMinutes) {
+    totalScheduledMinutes += 24 * 60;
+  }
+  
+  const diffMinutes = totalScheduledMinutes - totalCurrentMinutes;
+  const hours = Math.floor(diffMinutes / 60);
+  const minutes = diffMinutes % 60;
+  
+  return { hours, minutes };
+};
+
 export default {
   formatTimeForDisplay,
   parseTimeToStorage,
   isTimeStringValid,
   getCurrentTime,
   compareTimeStrings,
-  getMedicationStatus
+  getMedicationStatus,
+  getTimeUntilDose
 };
 
 export { formatTimeForDisplay, parseTimeToStorage }
