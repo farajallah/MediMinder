@@ -54,7 +54,10 @@ export default function HomeScreen() {
             
             // If current dose is missed and next dose is current/due, auto-skip the missed dose
             if (currentStatus === 'missed' && (nextStatus === 'current' || dateTimeUtils.compareTimeStrings(nextTime, currentTime) <= 0)) {
-              await logMedicationSkipped(medication.id, time, today, 'Dose was missed - automatically skipped');
+              // Defer the state update to the next event loop tick
+              setTimeout(async () => {
+                await logMedicationSkipped(medication.id, time, today, 'Dose was missed - automatically skipped');
+              }, 0);
             }
           }
         }
