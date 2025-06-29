@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, ScrollView, TouchableOpacity, RefreshControl, Image, Linking } from 'react-native';
 import { useApp } from '@/contexts/AppContext';
 import { format } from 'date-fns';
@@ -13,6 +13,10 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
+  
+  // Use ref to store the latest medicationLogs value
+  const medicationLogsRef = useRef(medicationLogs);
+  medicationLogsRef.current = medicationLogs;
   
   // Update the current time every minute
   useEffect(() => {
@@ -38,7 +42,7 @@ export default function HomeScreen() {
           const nextTime = sortedTimes[i + 1];
           
           // Check if current dose is missed and next dose is due
-          const currentLog = medicationLogs.find(
+          const currentLog = medicationLogsRef.current.find(
             log => log.medicationId === medication.id && 
                    log.scheduledTime === time && 
                    log.scheduledDate === today
@@ -58,7 +62,7 @@ export default function HomeScreen() {
     };
     
     autoSkipMissedDoses();
-  }, [currentDate, medications, medicationLogs, today, logMedicationSkipped]);
+  }, [currentDate, medications, today, logMedicationSkipped]);
   
   // Get all medication doses for today
   const todayMedications = medications.flatMap(medication => {
