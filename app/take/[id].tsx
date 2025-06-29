@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { useApp } from '@/contexts/AppContext';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,6 +7,7 @@ import { X, Check, X as XIcon } from 'lucide-react-native';
 import { formatTimeForDisplay } from '@/utils/dateTime';
 import * as Haptics from 'expo-haptics';
 import { Platform } from 'react-native';
+import Toast from 'react-native-toast-message';
 
 export default function TakeMedicationScreen() {
   const { id, time } = useLocalSearchParams<{ id: string; time: string }>();
@@ -43,7 +44,12 @@ export default function TakeMedicationScreen() {
   // Confirm skipping with reason
   const confirmSkip = async () => {
     if (!skipReason.trim()) {
-      Alert.alert(t('required'), t('skipReason'));
+      Toast.show({
+        type: 'error',
+        text1: t('required'),
+        text2: t('skipReason'),
+        visibilityTime: 3000,
+      });
       return;
     }
     
