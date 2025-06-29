@@ -18,6 +18,9 @@ export default function HomeScreen() {
   const medicationLogsRef = useRef(medicationLogs);
   medicationLogsRef.current = medicationLogs;
   
+  // Track which medications have been auto-skipped to prevent duplicate processing
+  const autoSkippedRef = useRef(new Set<string>());
+  
   // Update the current time every minute
   useEffect(() => {
     const timer = setInterval(() => {
@@ -41,6 +44,12 @@ export default function HomeScreen() {
           const time = sortedTimes[i];
           const nextTime = sortedTimes[i + 1];
           
+          // Create unique key for this medication-time-date combination
+          const skipKey = `${medication.id}_${time}_${today}`;
+          
+          // Skip if already processed
+          if (autoSkippedRef.current.has(skipKey)) continue;
+          
           // Check if current dose is missed and next dose is due
           const currentLog = medicationLogsRef.current.find(
             log => log.medicationId === medication.id && 
@@ -54,6 +63,9 @@ export default function HomeScreen() {
             
             // If current dose is missed and next dose is current/due, auto-skip the missed dose
             if (currentStatus === 'missed' && (nextStatus === 'current' || dateTimeUtils.compareTimeStrings(nextTime, currentTime) <= 0)) {
+              // Mark as processed to prevent duplicate skipping
+              autoSkippedRef.current.add(skipKey);
+              
               // Defer the state update to the next event loop tick
               setTimeout(async () => {
                 await logMedicationSkipped(medication.id, time, today, 'Dose was missed - automatically skipped');
@@ -66,6 +78,11 @@ export default function HomeScreen() {
     
     autoSkipMissedDoses();
   }, [currentDate, medications, today, logMedicationSkipped]);
+  
+  // Clear auto-skipped tracking when date changes
+  useEffect(() => {
+    autoSkippedRef.current.clear();
+  }, [today]);
   
   // Get all medication doses for today
   const todayMedications = medications.flatMap(medication => {
