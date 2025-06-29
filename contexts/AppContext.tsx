@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { format } from 'date-fns';
 import { Platform, I18nManager } from 'react-native';
@@ -212,7 +212,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [medicationLogs, isLoading]);
 
   // Load medicines from API
-  const loadMedicinesFromApi = async () => {
+  const loadMedicinesFromApi = useCallback(async () => {
     try {
       if (__DEV__) {
         console.info('[API] Fetching medicines from:', settings.apiUrl);
@@ -264,15 +264,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
       throw error;
     }
-  };
+  }, [settings.apiUrl]);
 
   // Update settings
-  const updateSettings = async (newSettings: Partial<AppSettings>) => {
+  const updateSettings = useCallback(async (newSettings: Partial<AppSettings>) => {
     setSettings(prevSettings => ({ ...prevSettings, ...newSettings }));
-  };
+  }, []);
 
   // Add new medication
-  const addMedication = async (medicationData: Omit<Medication, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const addMedication = useCallback(async (medicationData: Omit<Medication, 'id' | 'createdAt' | 'updatedAt'>) => {
     const now = Date.now();
     const newMedication: Medication = {
       ...medicationData,
@@ -283,10 +283,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     setMedications(prev => [...prev, newMedication]);
     return newMedication;
-  };
+  }, []);
 
   // Update existing medication
-  const updateMedication = async (id: string, updates: Partial<Medication>) => {
+  const updateMedication = useCallback(async (id: string, updates: Partial<Medication>) => {
     setMedications(prev => 
       prev.map(med => 
         med.id === id 
@@ -294,15 +294,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           : med
       )
     );
-  };
+  }, []);
 
   // Delete medication
-  const deleteMedication = async (id: string) => {
+  const deleteMedication = useCallback(async (id: string) => {
     setMedications(prev => prev.filter(med => med.id !== id));
-  };
+  }, []);
 
   // Log medication as taken
-  const logMedicationTaken = async (medicationId: string, scheduledTime: string, scheduledDate: string) => {
+  const logMedicationTaken = useCallback(async (medicationId: string, scheduledTime: string, scheduledDate: string) => {
     const now = Date.now();
     const newLog: MedicationLog = {
       id: `log_${now}`,
@@ -315,10 +315,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     
     setMedicationLogs(prev => [...prev, newLog]);
-  };
+  }, []);
 
   // Log medication as skipped
-  const logMedicationSkipped = async (medicationId: string, scheduledTime: string, scheduledDate: string, reason: string) => {
+  const logMedicationSkipped = useCallback(async (medicationId: string, scheduledTime: string, scheduledDate: string, reason: string) => {
     const now = Date.now();
     const newLog: MedicationLog = {
       id: `log_${now}`,
@@ -332,12 +332,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     
     setMedicationLogs(prev => [...prev, newLog]);
-  };
+  }, []);
 
   // Translation function
-  const t = (key: string, params?: object) => {
+  const t = useCallback((key: string, params?: object) => {
     return i18n.t(key, params);
-  };
+  }, [settings.language]);
 
   return (
     <AppContext.Provider
