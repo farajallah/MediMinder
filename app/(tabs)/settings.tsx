@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, ScrollView, Switch, TouchableOpacity, Alert, Image, Linking } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView, Switch, TouchableOpacity, Image, Linking } from 'react-native';
 import { Globe, Bell, Clock, Download } from 'lucide-react-native';
 import { useApp } from '@/contexts/AppContext';
 import { Picker } from '@react-native-picker/picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import dateTimeUtils from '@/utils/dateTime';
 import { router } from 'expo-router';
+import Toast from 'react-native-toast-message';
 
 const TIME_OPTIONS = [
   '00:00', '01:00', '02:00', '03:00', '04:00', '05:00',
@@ -35,29 +36,28 @@ export default function Settings() {
     try {
       await loadMedicinesFromApi();
       
-      // Show success message
-      Alert.alert(
-        t('medicinesLoaded'),
-        t('medicinesLoaded'),
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              // Navigate to home page
-              router.push('/(tabs)/');
-            }
-          }
-        ]
-      );
+      // Show success toast
+      Toast.show({
+        type: 'success',
+        text1: t('medicinesLoaded'),
+        text2: t('medicinesLoaded'),
+        visibilityTime: 3000,
+        onHide: () => {
+          // Navigate to home page
+          router.push('/(tabs)/');
+        }
+      });
       
       if (__DEV__) {
         console.log('[Settings]', t('medicinesLoaded'));
       }
     } catch (error) {
-      Alert.alert(
-        t('errorLoadingMedicines'),
-        error instanceof Error ? error.message : 'Unknown error occurred'
-      );
+      Toast.show({
+        type: 'error',
+        text1: t('errorLoadingMedicines'),
+        text2: error instanceof Error ? error.message : 'Unknown error occurred',
+        visibilityTime: 4000,
+      });
       
       if (__DEV__) {
         console.log('[Settings]', t('errorLoadingMedicines'), error);

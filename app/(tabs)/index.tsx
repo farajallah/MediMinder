@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, RefreshControl, Image, Linking, Alert } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, TouchableOpacity, RefreshControl, Image, Linking } from 'react-native';
 import { useApp } from '@/contexts/AppContext';
 import { format } from 'date-fns';
 import { Link } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Clock, CircleCheck as CheckCircle, Circle as XCircle, CircleAlert as AlertCircle } from 'lucide-react-native';
 import dateTimeUtils from '@/utils/dateTime';
+import Toast from 'react-native-toast-message';
 
 export default function HomeScreen() {
   const { medications, medicationLogs, settings, t, today, logMedicationSkipped } = useApp();
@@ -144,11 +145,12 @@ export default function HomeScreen() {
   const handleMedicationPress = (medicationId: string, time: string, status: string) => {
     if (status === 'upcoming') {
       const timeUntil = dateTimeUtils.getTimeUntilDose(time);
-      Alert.alert(
-        t('notDueYet') || 'Not Due Yet',
-        t('waitForDose') || `This medication is not due yet. Please wait ${timeUntil.hours} hours and ${timeUntil.minutes} minutes.`,
-        [{ text: 'OK' }]
-      );
+      Toast.show({
+        type: 'info',
+        text1: t('notDueYet') || 'Not Due Yet',
+        text2: t('waitForDose') || `This medication is not due yet. Please wait ${timeUntil.hours} hours and ${timeUntil.minutes} minutes.`,
+        visibilityTime: 4000,
+      });
       return;
     }
     

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, ScrollView } from 'react-native';
 import { useApp } from '@/contexts/AppContext';
 import { useLocalSearchParams, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,6 +7,7 @@ import { ChevronLeft, Plus, Minus } from 'lucide-react-native';
 import { Picker } from '@react-native-picker/picker';
 import { formatTimeForDisplay, parseTimeToStorage } from '@/utils/dateTime';
 import { Medication, FrequencyType } from '@/types';
+import Toast from 'react-native-toast-message';
 
 export default function MedicationScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -63,12 +64,22 @@ export default function MedicationScreen() {
   const saveMedication = async () => {
     // Validate form
     if (!name.trim()) {
-      Alert.alert(t('required'), t('medicationNameLabel'));
+      Toast.show({
+        type: 'error',
+        text1: t('required'),
+        text2: t('medicationNameLabel'),
+        visibilityTime: 3000,
+      });
       return;
     }
     
     if (!dosage.trim()) {
-      Alert.alert(t('required'), t('dosageLabel'));
+      Toast.show({
+        type: 'error',
+        text1: t('required'),
+        text2: t('dosageLabel'),
+        visibilityTime: 3000,
+      });
       return;
     }
     

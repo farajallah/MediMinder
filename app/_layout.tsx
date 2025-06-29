@@ -9,6 +9,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { Platform, View, Text, StyleSheet } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Toast from 'react-native-toast-message';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -75,6 +76,7 @@ export default function RootLayout() {
         <Stack.Screen name="+not-found" options={{ title: 'Oops!' }} />
       </Stack>
       <StatusBar style="auto" />
+      <Toast />
     </AppProvider>
   );
 }
